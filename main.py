@@ -42,6 +42,10 @@ def get_movie(id: int):
 @app.get('/movies/', tags=['movies'])
 def get_movies_by_category(category: str, year: int):
     return [ item for item in movies if item['category'] == category ]
+#Añadió un for en una sola línea que me va a devolver un item recorriendo cada uno de los ítem en la lista que cumpla con la condición de que la categoría coincida. 
+#Y con esto voy a recibir un listado ya con la documentación con los datos que coincidan con esta categoría.
+
+
 
 @app.post('/movies', tags=['movies'])
 def create_movie(id: int = Body(), title: str = Body(), overview:str = Body(), year:int = Body(), rating: float = Body(), category: str = Body()):
