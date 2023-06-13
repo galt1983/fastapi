@@ -1,9 +1,31 @@
 from fastapi import FastAPI, Body
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, Field
+from typing import Optional
 
 app = FastAPI()
 app.title = "Mi aplicación con  FastAPI"
 app.version = "0.0.1"
+
+class Movie(BaseModel):
+    id: Optional[int] = None
+    title: str = Field(min_length=5, max_length=15)
+    overview: str = Field(min_length=15, max_length=50)
+    year: int = Field(le=2022)
+    rating:float = Field(default=10, ge=1, le=10)
+    category:str = Field(default='Categoría', min_length=5, max_length=15)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "title": "Mi película",
+                "overview": "Descripción de la película",
+                "year": 2022,
+                "rating": 9.8,
+                "category" : "Acción"
+            }
+        }
 
 movies = [
     {
@@ -42,19 +64,26 @@ def get_movie(id: int):
 @app.get('/movies/', tags=['movies'])
 def get_movies_by_category(category: str, year: int):
     return [ item for item in movies if item['category'] == category ]
-#Añadió un for en una sola línea que me va a devolver un item recorriendo cada uno de los ítem en la lista que cumpla con la condición de que la categoría coincida. 
-#Y con esto voy a recibir un listado ya con la documentación con los datos que coincidan con esta categoría.
-
-
 
 @app.post('/movies', tags=['movies'])
-def create_movie(id: int = Body(), title: str = Body(), overview:str = Body(), year:int = Body(), rating: float = Body(), category: str = Body()):
-    movies.append({
-        "id": id,
-        "title": title,
-        "overview": overview,
-        "year": year,
-        "rating": rating,
-        "category": category
-    })
+def create_movie(movie: Movie):
+    movies.append(movie)
     return movies
+
+@app.put('/movies/{id}', tags=['movies'])
+def update_movie(id: int, movie: Movie):
+	for item in movies:
+		if item["id"] == id:
+			item['title'] = movie.title
+			item['overview'] = movie.overview
+			item['year'] = movie.year
+			item['rating'] = movie.rating
+			item['category'] = movie.category
+			return movies
+
+@app.delete('/movies/{id}', tags=['movies'])
+def delete_movie(id: int):
+    for item in movies:
+        if item["id"] == id:
+            movies.remove(item)
+            return movies
